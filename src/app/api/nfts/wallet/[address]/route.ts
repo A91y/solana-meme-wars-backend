@@ -1,18 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { clusterApiUrl, Connection, PublicKey } from "@solana/web3.js";
-import { Metaplex } from "@metaplex-foundation/js";
-import { SOLANA_RPC_URL } from "@/utils/constant";
-
-const connection = new Connection(SOLANA_RPC_URL);
-const metaplex = new Metaplex(connection);
-
-async function getWalletNFTs(walletAddress: string) {
-  const nfts = await metaplex
-    .nfts()
-    .findAllByOwner({ owner: new PublicKey(walletAddress) });
-
-  return nfts;
-}
+import { getWalletNFTs } from "@/utils/solana";
 
 export async function GET(
   _: NextRequest,
