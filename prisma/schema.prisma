@@ -1,0 +1,51 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Post {
+    id           Int           @id @default(autoincrement())
+    nftMint      String
+    tokenAccount String
+    creator      String
+    title        String
+    description  String?
+    imageUrl     String
+    isForSale    Boolean
+    price        Float?
+    createdAt    DateTime      @default(now())
+    updatedAt    DateTime      @updatedAt
+    status       String // "active" | "sold" | "removed"
+    metadata     Json
+    Transaction  Transaction[]
+}
+
+model User {
+    id            Int      @id @default(autoincrement())
+    walletAddress String   @unique
+    username      String?
+    totalPosts    Int      @default(0)
+    totalSales    Int      @default(0)
+    createdAt     DateTime @default(now())
+    lastActive    DateTime
+}
+
+model Transaction {
+    id          Int       @id @default(autoincrement())
+    postId      Int
+    nftMint     String
+    seller      String
+    buyer       String
+    price       Float
+    platformFee Float
+    signature   String    @unique
+    status      String // "pending" | "completed" | "failed"
+    createdAt   DateTime  @default(now())
+    completedAt DateTime?
+
+    Post Post @relation(fields: [postId], references: [id])
+}
