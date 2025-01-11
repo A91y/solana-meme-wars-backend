@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import cors from "./middlware/cors";
 import { PrismaClient } from "@prisma/client"; // Assuming you are using Prisma for DB
 import {
   verifyNFTOwnership,
@@ -9,7 +8,6 @@ import {
 import { createPost, getAllPosts } from "@/utils/dbUtils";
 
 export async function POST(req: Request) {
-   await cors(req, res);
   const { nftMint, walletAddress } = await req.json();
 
   try {
