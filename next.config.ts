@@ -2,10 +2,18 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  async rewrites() {
+        return [
+          {
+            source: '/api/:path*',
+            destination: 'https://solana-meme-wars-backend.vercel.app/:path*',
+          },
+        ]
+      },
   async headers() {
     return [
       {
-        source: "/api/*",
+        source: "/api/:path",
         headers: [
           { key: "Access-Control-Allow-Origin", value: "*" },
           {
