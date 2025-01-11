@@ -3,7 +3,7 @@ import { getWalletNFTs } from "@/utils/solana";
 
 export async function GET(
   _: NextRequest,
-  { params }: { params: { address: string } }
+  { params }: any
 ) {
   const { address } = await params;
 
