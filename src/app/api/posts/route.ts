@@ -24,6 +24,7 @@ export async function POST(req: Request) {
     try {
       imageUrl = await getImageUrlByURI(nft.uri);
     } catch (error) {
+      console.error("Error fetching image URL", error);
       imageUrl = "";
     }
 

@@ -68,6 +68,9 @@ export async function getWalletNFTs(walletAddress: string) {
 export async function getImageUrlByURI(uri: string) {
   const response = await fetch(uri);
   const data = await response.json();
+  if (Array.isArray(data)) {
+    return data[0].image;
+  }
   return data.image;
 }
 
