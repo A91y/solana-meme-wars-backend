@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getWalletNFTs } from "@/utils/solana";
 
-export async function GET(
-  _: NextRequest,
-  { params }: any
-) {
-  const { address } = await params;
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const address = searchParams.get("address");
 
   if (!address) {
     return NextResponse.json(
-      { error: "Wallet address is required in the URL" },
+      { error: "Wallet address is required in the query parameters" },
       { status: 400 }
     );
   }
