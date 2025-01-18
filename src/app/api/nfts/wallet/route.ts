@@ -6,23 +6,43 @@ export async function GET(request: Request) {
   const address = searchParams.get("address");
 
   if (!address) {
-    return NextResponse.json(
-      { error: "Wallet address is required in the query parameters" },
-      { status: 400 }
+    return new NextResponse(
+      JSON.stringify({
+        error: "Wallet address is required in the query parameters",
+      }),
+      {
+        status: 400,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "application/json",
+        },
+      }
     );
   }
 
   try {
     const nfts = await getWalletNFTs(address);
-    return NextResponse.json({ nfts }, { status: 200 });
+    return new NextResponse(JSON.stringify({ nfts }), {
+      status: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "application/json",
+      },
+    });
   } catch (error) {
     console.error("Error fetching NFTs:", error);
-    return NextResponse.json(
-      {
+    return new NextResponse(
+      JSON.stringify({
         error:
           "Failed to fetch NFTs. Please check the wallet address and try again.",
-      },
-      { status: 500 }
+      }),
+      {
+        status: 500,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "application/json",
+        },
+      }
     );
   }
 }
