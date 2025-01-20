@@ -2,9 +2,9 @@ import { addCommentToPost, getCommentsForPost } from "@/utils/dbUtils";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  const { postId, interactor, content } = await req.json();
+  const { postId, user, content } = await req.json();
   try {
-    const newComment = await addCommentToPost(postId, interactor, content);
+    const newComment = await addCommentToPost(postId, user, content);
     return NextResponse.json(newComment);
   } catch (error) {
     return NextResponse.json(

@@ -2,9 +2,9 @@ import { toggleUpvote } from "@/utils/dbUtils";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  const { postId, interactor } = await req.json();
+  const { postId, user } = await req.json();
   try {
-    const result = await toggleUpvote(postId, interactor);
+    const result = await toggleUpvote(postId, user);
     return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json(
