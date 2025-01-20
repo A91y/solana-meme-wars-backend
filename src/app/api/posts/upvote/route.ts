@@ -15,5 +15,5 @@ export async function POST(req: Request) {
 }
 
 export async function GET(req: Request) {
-  return NextResponse.json({ message: "Upvote API" });
+  return NextResponse.json({ error: "Method Not Allowed" }, { status: 405 });
 }

@@ -16,11 +16,9 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
   try {
-    // Extract postId from the query parameters
     const url = new URL(req.url);
     const postId = url.searchParams.get("postId");
 
-    // Ensure postId is provided and is a valid number
     if (!postId || isNaN(Number(postId))) {
       return NextResponse.json(
         { error: "Invalid or missing postId" },
@@ -28,10 +26,8 @@ export async function GET(req: Request) {
       );
     }
 
-    // Fetch comments for the specified post
     const comments = await getCommentsForPost(Number(postId));
 
-    // Return the comments in the response
     return NextResponse.json({ comments });
   } catch (error) {
     console.error("Error fetching comments:", error);

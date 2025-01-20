@@ -4,7 +4,7 @@ import {
   getNFTByMint,
   getImageUrlByURI,
 } from "@/utils/solana";
-import { createPost, getAllPosts } from "@/utils/dbUtils";
+import { createPost, getAllPosts, getPostById } from "@/utils/dbUtils";
 
 export async function POST(req: Request) {
   const { nftMint, walletAddress } = await req.json();
@@ -47,8 +47,18 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const creator = searchParams.get("creator");
+  const postId = searchParams.get("postId");
 
   try {
+    if (postId) {
+      // Fetch details for a specific post by ID
+      const post = await getPostById(Number(postId));
+      if (!post) {
+        return NextResponse.json({ error: "Post not found" }, { status: 404 });
+      }
+      return NextResponse.json(post);
+    }
+
     const posts = await getAllPosts(creator ?? undefined);
     return NextResponse.json(posts);
   } catch (error) {

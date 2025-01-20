@@ -282,3 +282,17 @@ export async function getCommentsForPost(postId: number) {
 
   return comments;
 }
+
+/**
+ * Fetch a specific post by its ID.
+ */
+export async function getPostById(postId: number) {
+  return await prisma.post.findUnique({
+    where: { id: postId },
+    include: {
+      User: true,
+      comments: true,
+      votes: true,
+    },
+  });
+}
