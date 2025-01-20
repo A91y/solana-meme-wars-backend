@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client"; // Assuming you are using Prisma for DB
 import {
   verifyNFTOwnership,
   getNFTByMint,
