@@ -266,3 +266,19 @@ export async function getAllPosts(creator?: string) {
   const filter = creator ? { where: { creator } } : undefined;
   return await prisma.post.findMany(filter);
 }
+
+/**
+ * Fetch all comments for a specific post.
+ */
+export async function getCommentsForPost(postId: number) {
+  // Fetch comments for the given postId along with the user who posted them
+  const comments = await prisma.comment.findMany({
+    where: { postId },
+    include: {
+      User: { select: { walletAddress: true, username: true } },
+    },
+    orderBy: { createdAt: "asc" },
+  });
+
+  return comments;
+}
