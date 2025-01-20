@@ -296,3 +296,14 @@ export async function getPostById(postId: number) {
     },
   });
 }
+
+export async function getPostByMintAddress(mintAddress: string) {
+  return await prisma.post.findMany({
+    where: { nftMint: mintAddress },
+    include: {
+      User: true,
+      comments: true,
+      votes: true,
+    },
+  });
+}
