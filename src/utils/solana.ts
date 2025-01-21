@@ -83,3 +83,22 @@ export async function getNFTByMint(mint: string) {
     .findByMint({ mintAddress: new PublicKey(mint) });
   return nft;
 }
+
+export async function getNotPostedNFTByWallet(walletAddress: string) {
+  const nfts = await getWalletNFTs(walletAddress);
+
+  const mintAddresses = nfts.map((nft) => (nft as any).mintAddress.toString());
+  const postedNFTs = await prisma.post.findMany({
+    where: { nftMint: { in: mintAddresses } },
+    select: { nftMint: true },
+  });
+
+  const postedMintAddresses = postedNFTs.map((post) => post.nftMint);
+
+  // Filter out posted NFTs
+  const notPostedNFTs = nfts.filter(
+    (nft) => !postedMintAddresses.includes((nft as any).mintAddress.toString())
+  );
+
+  return notPostedNFTs;
+}
