@@ -1,3 +1,4 @@
+import { updateUserProfileImage } from "@/utils/dbUtils";
 import { addWallet } from "@/utils/solana";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { randomUUID } from "crypto";
@@ -35,7 +36,11 @@ export async function POST(req: NextRequest) {
     await awsClient.send(new PutObjectCommand(uploadParams));
 
     const url = `https://${bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
-    return NextResponse.json({ success: true, url });
+    const updatedUser = await updateUserProfileImage(wallet, url);
+    return NextResponse.json(
+      { success: true, user: updatedUser },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error uploading file", error);
     return NextResponse.json(

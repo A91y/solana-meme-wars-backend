@@ -41,6 +41,7 @@ model User {
     totalPosts    Int       @default(0)
     totalSales    Int       @default(0)
     createdAt     DateTime  @default(now())
+    profileImage  String?
     lastActive    DateTime
     comments      Comment[] // Relation to comments made by the user
     posts         Post[] // Relation to posts created by the user

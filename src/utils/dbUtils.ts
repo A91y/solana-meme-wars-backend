@@ -307,3 +307,13 @@ export async function getPostByMintAddress(mintAddress: string) {
     },
   });
 }
+
+export async function updateUserProfileImage(
+  walletAddress: string,
+  imageUrl: string
+) {
+  return await prisma.user.update({
+    where: { walletAddress },
+    data: { profileImage: imageUrl },
+  });
+}
