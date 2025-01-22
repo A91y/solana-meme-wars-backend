@@ -1,6 +1,12 @@
 import { addWallet } from "@/utils/solana";
 import { NextResponse } from "next/server";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
 export async function POST(req: Request) {
   const { message, signature, wallet } = await req.json();
   try {
@@ -8,18 +14,23 @@ export async function POST(req: Request) {
     if (!result) {
       return NextResponse.json(
         { error: "Failed to add wallet" },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: corsHeaders,
+    });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to toggle upvote" },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
 
 export async function GET(req: Request) {
-  return NextResponse.json({ error: "Method Not Allowed" }, { status: 405 });
+  return NextResponse.json(
+    { error: "Method Not Allowed" },
+    { status: 405, headers: { "Access-Control-Allow-Origin": "*" } }
+  );
 }
