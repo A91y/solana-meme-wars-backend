@@ -22,7 +22,7 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to toggle upvote" },
+      { error: "Failed to add wallet" },
       { status: 500, headers: corsHeaders }
     );
   }
