@@ -4,8 +4,15 @@ import {
   createTransferInstruction,
 } from "@solana/spl-token";
 import prisma from "@/lib/db";
-import { SOLANA_RPC_URL } from "./constant";
+import {
+  CHALLENGE_PREFIX,
+  NONCE_JWT_EXPIRATION_TIME,
+  SOLANA_RPC_URL,
+} from "./constant";
 import { Metadata, Metaplex } from "@metaplex-foundation/js";
+import * as crypto from "crypto";
+import * as nacl from "tweetnacl";
+import bs58 from "bs58";
 
 export async function verifyNFTOwnership(
   mintAddress: string,
@@ -101,4 +108,96 @@ export async function getNotPostedNFTByWallet(walletAddress: string) {
   );
 
   return notPostedNFTs;
+}
+
+export function generateNonce(wallet: string): string {
+  const expires = Date.now() + NONCE_JWT_EXPIRATION_TIME;
+  const data = `${wallet}:${expires}`;
+  const hmac = crypto
+    .createHmac("sha256", process.env.HMAC_SECRET ?? "secret")
+    .update(data)
+    .digest("hex");
+  return `${data}:${hmac}`;
+}
+
+export async function verifyNonce(nonce: string, wallet: string) {
+  try {
+    const [expires, hmac] = nonce.split(":");
+    const data = `${wallet}:${expires}`;
+    const expectedHmac = crypto
+      .createHmac("sha256", process.env.HMAC_SECRET ?? "secret")
+      .update(data)
+      .digest("hex");
+    if (hmac !== expectedHmac) {
+      throw new Error("Invalid HMAC");
+    }
+
+    if (Number(expires) < Date.now()) {
+      throw new Error("Expired nonce");
+    }
+
+    return { data: Number(expires), error: null };
+  } catch (error) {
+    return { data: null, error: error };
+  }
+}
+
+export async function verifySignature(
+  message: string,
+  signature: string,
+  wallet: string
+) {
+  try {
+    const messageUint8 = new TextEncoder().encode(message);
+    const signatureUint8 = bs58.decode(signature);
+    const publicKeyUint8 = bs58.decode(wallet);
+
+    console.log(`Signature length: ${signatureUint8.length}`);
+    console.log(`Public Key length: ${publicKeyUint8.length}`);
+
+    if (signatureUint8.length !== nacl.sign.signatureLength) {
+      throw new Error("Invalid signature length");
+    }
+    if (publicKeyUint8.length !== nacl.sign.publicKeyLength) {
+      throw new Error("Invalid public key length");
+    }
+
+    return nacl.sign.detached.verify(
+      messageUint8,
+      signatureUint8,
+      publicKeyUint8
+    );
+  } catch (error) {
+    console.error(`Error in verifying signature: ${error}`);
+    return false;
+  }
+}
+
+export async function addWallet(
+  message: string,
+  signature: string,
+  wallet: string
+) {
+  const nonceObj = message.split(":");
+  const nonceString = `${nonceObj[2]}:${nonceObj[3]}`;
+  const nonce = await verifyNonce(nonceString, wallet);
+  if (nonce.error) {
+    return null;
+  }
+  const expectedMessage = `${CHALLENGE_PREFIX}${wallet}:${nonceString}`;
+  if (message !== expectedMessage) {
+    return null;
+  }
+  const isValid = verifySignature(message, signature, wallet);
+  if (!isValid) {
+    return null;
+  }
+
+  const user = await prisma.user.upsert({
+    where: { walletAddress: wallet },
+    update: { lastActive: new Date() },
+    create: { walletAddress: wallet, lastActive: new Date() },
+  });
+
+  return { status: "success", user };
 }
