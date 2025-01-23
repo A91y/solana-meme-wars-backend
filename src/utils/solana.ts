@@ -129,6 +129,8 @@ export async function verifyNonce(nonce: string, wallet: string) {
       .createHmac("sha256", process.env.HMAC_SECRET ?? "secret")
       .update(data)
       .digest("hex");
+    console.log(`Expected HMAC: ${expectedHmac}`);
+    console.log(`Received HMAC: ${hmac}`);
     if (hmac !== expectedHmac) {
       throw new Error("Invalid HMAC");
     }
