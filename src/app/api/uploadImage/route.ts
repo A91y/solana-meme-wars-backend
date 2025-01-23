@@ -6,20 +6,22 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { message, signature, wallet } = await req.json();
-    if (!message || !signature || !wallet) {
-      return NextResponse.json(
-        { error: "Missing required fields: message, signature, or wallet" },
-        { status: 400 }
-      );
-    }
+    // const { message, signature, wallet } = await req.json();
 
     const formData = await req.formData();
     const file = formData.get("file") as File;
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
-
+    const message = formData.get("message") as string;
+    const signature = formData.get("signature") as string;
+    const wallet = formData.get("wallet") as string;
+    if (!message || !signature || !wallet) {
+      return NextResponse.json(
+        { error: "Missing required fields: message, signature, or wallet" },
+        { status: 400 }
+      );
+    }
     const result = await addWallet(message, signature, wallet);
     if (!result) {
       return NextResponse.json(
