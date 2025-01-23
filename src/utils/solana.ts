@@ -117,6 +117,7 @@ export function generateNonce(wallet: string): string {
     .createHmac("sha256", process.env.HMAC_SECRET ?? "secret")
     .update(data)
     .digest("hex");
+  console.log(`Generated nonce for wallet ${wallet}: ${data}:${hmac}`);
   return `${data}:${hmac}`;
 }
 
@@ -136,8 +137,10 @@ export async function verifyNonce(nonce: string, wallet: string) {
       throw new Error("Expired nonce");
     }
 
+    console.log(`Nonce verified for wallet ${wallet}`);
     return { data: Number(expires), error: null };
   } catch (error) {
+    console.error(`Error verifying nonce for wallet ${wallet}: ${error}`);
     return { data: null, error: error };
   }
 }
@@ -162,13 +165,20 @@ export async function verifySignature(
       throw new Error("Invalid public key length");
     }
 
-    return nacl.sign.detached.verify(
+    const isValid = nacl.sign.detached.verify(
       messageUint8,
       signatureUint8,
       publicKeyUint8
     );
+
+    console.log(
+      `Signature verification result for wallet ${wallet}: ${isValid}`
+    );
+    return isValid;
   } catch (error) {
-    console.error(`Error in verifying signature: ${error}`);
+    console.error(
+      `Error in verifying signature for wallet ${wallet}: ${error}`
+    );
     return false;
   }
 }
@@ -178,26 +188,32 @@ export async function addWallet(
   signature: string,
   wallet: string
 ) {
-  const nonceObj = message.split(":");
-  const nonceString = `${nonceObj[2]}:${nonceObj[3]}`;
-  const nonce = await verifyNonce(nonceString, wallet);
-  if (nonce.error) {
-    return null;
-  }
-  const expectedMessage = `${CHALLENGE_PREFIX}${wallet}:${nonceString}`;
-  if (message !== expectedMessage) {
-    return null;
-  }
-  const isValid = verifySignature(message, signature, wallet);
-  if (!isValid) {
-    return null;
-  }
+  try {
+    const nonceObj = message.split(":");
+    const nonceString = `${nonceObj[2]}:${nonceObj[3]}`;
+    const nonce = await verifyNonce(nonceString, wallet);
+    if (nonce.error) {
+      throw new Error(`Nonce verification failed: ${nonce.error}`);
+    }
+    const expectedMessage = `${CHALLENGE_PREFIX}${wallet}:${nonceString}`;
+    if (message !== expectedMessage) {
+      throw new Error("Message does not match expected format");
+    }
+    const isValid = await verifySignature(message, signature, wallet);
+    if (!isValid) {
+      throw new Error("Signature verification failed");
+    }
 
-  const user = await prisma.user.upsert({
-    where: { walletAddress: wallet },
-    update: { lastActive: new Date() },
-    create: { walletAddress: wallet, lastActive: new Date() },
-  });
+    const user = await prisma.user.upsert({
+      where: { walletAddress: wallet },
+      update: { lastActive: new Date() },
+      create: { walletAddress: wallet, lastActive: new Date() },
+    });
 
-  return { status: "success", user };
+    console.log(`Wallet ${wallet} added/updated successfully`);
+    return { status: "success", user };
+  } catch (error) {
+    console.error(`Error adding wallet ${wallet}: ${error}`);
+    return null;
+  }
 }
