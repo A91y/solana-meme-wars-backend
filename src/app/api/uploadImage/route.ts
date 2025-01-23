@@ -16,6 +16,21 @@ export async function POST(req: NextRequest) {
       console.error("No file provided");
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
+    if (!file.type) {
+      console.error("File type not provided");
+      return NextResponse.json(
+        { error: "File type not provided" },
+        { status: 400 }
+      );
+    }
+    const fileBuffer = await file.arrayBuffer();
+    if (!fileBuffer) {
+      console.error("Failed to read file buffer");
+      return NextResponse.json(
+        { error: "Failed to read file buffer" },
+        { status: 500 }
+      );
+    }
     console.log("File retrieved from form data");
 
     const message = formData.get("message") as string;
@@ -69,7 +84,7 @@ export async function POST(req: NextRequest) {
     const uploadParams = {
       Bucket: bucket,
       Key: key,
-      Body: Buffer.from(await file.arrayBuffer()),
+      Body: Buffer.from(fileBuffer),
       ContentType: file.type,
     };
 
