@@ -193,8 +193,11 @@ export async function addWallet(
   wallet: string
 ) {
   try {
+    console.log(`message: ${message}`);
     const nonceObj = message.split(":");
+    console.log(`nonceObj: ${nonceObj}`);
     const nonceString = `${nonceObj[2]}:${nonceObj[3]}`;
+    console.log(`nonceString: ${nonceString}`);
     const nonce = await verifyNonce(nonceString, wallet);
     if (nonce.error) {
       throw new Error(`Nonce verification failed: ${nonce.error}`);
