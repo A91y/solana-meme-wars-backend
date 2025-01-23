@@ -45,6 +45,9 @@ export async function POST(req: NextRequest) {
       );
     }
     console.log("Message, signature, and wallet retrieved from form data");
+    console.log(`Message: ${message}`);
+    console.log(`Signature: ${signature}`);
+    console.log(`Wallet: ${wallet}`);
 
     const result = await addWallet(message, signature, wallet);
     // const result = true;
