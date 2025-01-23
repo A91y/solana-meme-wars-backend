@@ -1,4 +1,4 @@
-import { updateUserProfileImage } from "@/utils/dbUtils";
+import { updateUsername, updateUserProfileImage } from "@/utils/dbUtils";
 import { addWallet } from "@/utils/solana";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { randomUUID } from "crypto";
@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
     const message = formData.get("message") as string;
     const signature = formData.get("signature") as string;
     const wallet = formData.get("wallet") as string;
+    const username = formData.get("username") as string | null;
     if (!message || !signature || !wallet) {
       console.error("Missing required fields: message, signature, or wallet");
       return NextResponse.json(
@@ -93,7 +94,10 @@ export async function POST(req: NextRequest) {
 
     const url = `https://${bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
     console.log(`File URL: ${url}`);
-
+    if (username) {
+      console.log("Updating username");
+      await updateUsername(wallet, username);
+    }
     const updatedUser = await updateUserProfileImage(wallet, url);
     if (!updatedUser) {
       console.error("Failed to update user profile image");

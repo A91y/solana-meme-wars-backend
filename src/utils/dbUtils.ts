@@ -339,3 +339,35 @@ export async function updateUserProfileImage(wallet: string, url: string) {
     return { error: "Failed to update profile image" };
   }
 }
+export async function updateUsername(wallet: string, username: string) {
+  try {
+    if (!wallet || !username) {
+      console.error("Invalid input: wallet or username is missing");
+      return { error: "Invalid input" };
+    }
+    let user = await prisma.user.findUnique({
+      where: { walletAddress: wallet },
+    });
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          walletAddress: wallet,
+          username: username,
+          profileImage: null,
+          totalPosts: 0,
+          totalSales: 0,
+          lastActive: new Date(),
+        },
+      });
+    } else {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { username: username },
+      });
+    }
+    return user;
+  } catch (error) {
+    console.error("Error updating username:", error);
+    return { error: "Failed to update username" };
+  }
+}
