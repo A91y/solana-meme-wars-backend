@@ -6,24 +6,35 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    // const { message, signature, wallet } = await req.json();
+    console.log("Received request");
 
     const formData = await req.formData();
+    console.log("Form data parsed");
+
     const file = formData.get("file") as File;
     if (!file) {
+      console.error("No file provided");
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
+    console.log("File retrieved from form data");
+
     const message = formData.get("message") as string;
     const signature = formData.get("signature") as string;
     const wallet = formData.get("wallet") as string;
     if (!message || !signature || !wallet) {
+      console.error("Missing required fields: message, signature, or wallet");
       return NextResponse.json(
         { error: "Missing required fields: message, signature, or wallet" },
         { status: 400 }
       );
     }
+    console.log("Message, signature, and wallet retrieved from form data");
+
     const result = await addWallet(message, signature, wallet);
     if (!result) {
+      console.error(
+        "Failed to add wallet. Please check your message and signature."
+      );
       return NextResponse.json(
         {
           error:
@@ -32,17 +43,21 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+    console.log("Wallet added successfully");
 
     const awsClient = new S3Client({ region: process.env.AWS_REGION });
     const bucket = process.env.AWS_BUCKET_NAME || "";
     if (!bucket) {
+      console.error("AWS bucket name is not configured");
       return NextResponse.json(
         { error: "AWS bucket name is not configured" },
         { status: 500 }
       );
     }
+    console.log("AWS client and bucket configured");
 
     const key = `uploads/${randomUUID()}`;
+    console.log(`Generated S3 key: ${key}`);
 
     const uploadParams = {
       Bucket: bucket,
@@ -52,15 +67,20 @@ export async function POST(req: NextRequest) {
     };
 
     await awsClient.send(new PutObjectCommand(uploadParams));
+    console.log("File uploaded to S3");
 
     const url = `https://${bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+    console.log(`File URL: ${url}`);
+
     const updatedUser = await updateUserProfileImage(wallet, url);
     if (!updatedUser) {
+      console.error("Failed to update user profile image");
       return NextResponse.json(
         { error: "Failed to update user profile image" },
         { status: 500 }
       );
     }
+    console.log("User profile image updated successfully");
 
     return NextResponse.json(
       { success: true, user: updatedUser },
