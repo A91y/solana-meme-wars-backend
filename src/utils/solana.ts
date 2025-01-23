@@ -123,7 +123,9 @@ export function generateNonce(wallet: string): string {
 
 export async function verifyNonce(nonce: string, wallet: string) {
   try {
+    console.log(`Verifying nonce for wallet ${wallet}, nonce: ${nonce}`);
     const [expires, hmac] = nonce.split(":");
+    console.log(`Expires: ${expires}, HMAC: ${hmac}`);
     const data = `${wallet}:${expires}`;
     const expectedHmac = crypto
       .createHmac("sha256", process.env.HMAC_SECRET ?? "secret")
