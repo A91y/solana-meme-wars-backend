@@ -308,12 +308,34 @@ export async function getPostByMintAddress(mintAddress: string) {
   });
 }
 
-export async function updateUserProfileImage(
-  walletAddress: string,
-  imageUrl: string
-) {
-  return await prisma.user.update({
-    where: { walletAddress },
-    data: { profileImage: imageUrl },
-  });
+export async function updateUserProfileImage(wallet: string, url: string) {
+  try {
+    if (!wallet || !url) {
+      console.error("Invalid input: wallet or url is missing");
+      return { error: "Invalid input" };
+    }
+    let user = await prisma.user.findUnique({
+      where: { walletAddress: wallet },
+    });
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          walletAddress: wallet,
+          profileImage: url,
+          username: null,
+          totalPosts: 0,
+          totalSales: 0,
+          lastActive: new Date(),
+        },
+      });
+    }
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: { profileImage: url },
+    });
+    return updatedUser;
+  } catch (error) {
+    console.error("Error updating user profile image:", error);
+    return { error: "Failed to update profile image" };
+  }
 }

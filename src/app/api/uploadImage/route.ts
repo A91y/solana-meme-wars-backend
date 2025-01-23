@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
     console.log("Message, signature, and wallet retrieved from form data");
 
     const result = await addWallet(message, signature, wallet);
+    // const result = true;
     if (!result) {
       console.error(
         "Failed to add wallet. Please check your message and signature."
@@ -45,7 +46,13 @@ export async function POST(req: NextRequest) {
     }
     console.log("Wallet added successfully");
 
-    const awsClient = new S3Client({ region: process.env.AWS_REGION });
+    const awsClient = new S3Client({
+      region: process.env.AWS_REGION,
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY ?? "",
+        secretAccessKey: process.env.AWS_SECRET_KEY ?? "",
+      },
+    });
     const bucket = process.env.AWS_BUCKET_NAME || "";
     if (!bucket) {
       console.error("AWS bucket name is not configured");
