@@ -371,3 +371,19 @@ export async function updateUsername(wallet: string, username: string) {
     return { error: "Failed to update username" };
   }
 }
+
+export async function getUserProfile(wallet: string) {
+  try {
+    if (!wallet) {
+      console.error("Invalid input: wallet is missing");
+      return { error: "Invalid input" };
+    }
+    const user = await prisma.user.findUnique({
+      where: { walletAddress: wallet },
+    });
+    return user;
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    return { error: "Failed to fetch user profile" };
+  }
+}
