@@ -224,3 +224,8 @@ export async function addWallet(
     return null;
   }
 }
+
+export async function getImageUrlByNftMint(mint: string) {
+  const nft = await getNFTByMint(mint);
+  return nft.json?.image ?? "";
+}
