@@ -263,8 +263,20 @@ export async function addCommentToPost(
  * Get all posts.
  */
 export async function getAllPosts(creator?: string) {
-  const filter = creator ? { where: { creator } } : undefined;
-  return await prisma.post.findMany(filter);
+  // const filter = creator ? { where: { creator } } : {};
+  if (creator) {
+    return await prisma.post.findMany({
+      where: { creator: creator },
+      include: {
+        User: true,
+      },
+    });
+  }
+  return await prisma.post.findMany({
+    include: {
+      User: true,
+    },
+  });
 }
 
 /**
@@ -275,7 +287,7 @@ export async function getCommentsForPost(postId: number) {
   const comments = await prisma.comment.findMany({
     where: { postId },
     include: {
-      User: { select: { walletAddress: true, username: true } },
+      User: true,
     },
     orderBy: { createdAt: "asc" },
   });
