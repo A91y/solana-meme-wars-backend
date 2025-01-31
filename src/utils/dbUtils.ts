@@ -275,6 +275,7 @@ export async function getAllPosts(creator?: string) {
   return await prisma.post.findMany({
     include: {
       User: true,
+      comments: true,
     },
   });
 }
